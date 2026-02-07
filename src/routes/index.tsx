@@ -40,6 +40,7 @@ function Home() {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const [pendingMessage, setPendingMessage] = useState<Message | null>(null)
   const [error, setError] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
@@ -231,18 +232,7 @@ function Home() {
   }, [updateConversationTitle]);
 
   return (
-    <div className="relative flex h-screen bg-gray-900">
-      {/* Settings Button */}
-      <div className="absolute z-50 top-5 right-5">
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="flex items-center justify-center w-10 h-10 text-white transition-opacity rounded-full bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Sidebar */}
+    <div className="operator-shell">
       <Sidebar 
         conversations={conversations}
         currentConversationId={currentConversationId}
@@ -254,55 +244,84 @@ function Home() {
         editingTitle={editingTitle}
         setEditingTitle={setEditingTitle}
         handleUpdateChatTitle={handleUpdateChatTitle}
+        collapsed={sidebarCollapsed}
+        // onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+        onToggleCollapse={() => {}}
       />
 
-      {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        {!isAnthropicKeyDefined && (
-          <div className="w-full max-w-3xl px-2 py-2 mx-auto mt-4 mb-2 font-medium text-center text-white bg-orange-500 rounded-md text-sm">
-            <p>This app requires an Anthropic API key to work properly. Update your <code>.env</code> file or get a <a href='https://console.anthropic.com/settings/keys' className='underline'>new Anthropic key</a>.</p>
-            <p>For local development, use <a href='https://www.netlify.com/products/dev/' className='underline'>netlify dev</a> to automatically load environment variables.</p>
-          </div>
-        )}
-        {error && (
-          <p className="w-full max-w-3xl p-4 mx-auto font-bold text-orange-500">{error}</p>
-        )}
-        {currentConversationId ? (
-          <>
-            {/* Messages */}
-            <div
-              ref={messagesContainerRef}
-              className="flex-1 pb-24 overflow-y-auto"
-            >
-              <div className="w-full max-w-3xl px-4 mx-auto">
-                {[...messages, pendingMessage]
-                  .filter((message): message is Message => message !== null)
-                  .map((message) => (
-                    <ChatMessage key={message.id} message={message} />
-                  ))}
-                {isLoading && <LoadingIndicator />}
-              </div>
+      <div className="operator-main">
+        <div className="operator-topbar">
+          <div className="brand-row">
+            <span className="text-sm">Surrealium</span>
+            <div className="status-pill">
+              <span className="status-dot" aria-hidden="true" />
+              Active
             </div>
+          </div>
+          <div className="flex items-center gap-10">
+            <label className="text-xs uppercase tracking-[0.2em] text-[var(--text-dim)]">
+              Model
+              <select className="model-select ml-2">
+                <option>Sur-01</option>
+                <option>Sur-02</option>
+                <option>Sur-03</option>
+                <option>Sur-04</option>
+              </select>
+            </label>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="circle-btn"
+              aria-label="Open settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
-            {/* Input */}
-            <ChatInput 
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-            />
-          </>
-        ) : (
-          <WelcomeScreen 
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-          />
-        )}
+        <div className="operator-stage">
+          {!isAnthropicKeyDefined && (
+            <div className="glass-card text-sm text-[var(--text-primary)]">
+              <p>This app requires an Anthropic API key to work properly. Update your <code>.env</code> file or get a new key from Anthropic.</p>
+            </div>
+          )}
+          {error && (
+            <div className="glass-card text-[var(--magenta)]">{error}</div>
+          )}
+
+          <div className="stage-surface">
+            {currentConversationId ? (
+              <>
+                <div
+                  ref={messagesContainerRef}
+                  className="messages-scroll"
+                >
+                  {[...messages, pendingMessage]
+                    .filter((message): message is Message => message !== null)
+                    .map((message) => (
+                      <ChatMessage key={message.id} message={message} />
+                    ))}
+                  {isLoading && <LoadingIndicator />}
+                </div>
+
+                <ChatInput 
+                  input={input}
+                  setInput={setInput}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </>
+            ) : (
+              <WelcomeScreen 
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+              />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Settings Dialog */}
       <SettingsDialog
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
