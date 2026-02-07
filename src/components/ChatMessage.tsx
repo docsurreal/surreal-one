@@ -2,27 +2,25 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
+import { Hexagon } from 'lucide-react'
 import type { Message } from '../utils/ai'
 
 export const ChatMessage = ({ message }: { message: Message }) => (
-  <div
-    className={`py-6 ${
-      message.role === 'assistant'
-        ? 'bg-gradient-to-r from-orange-500/5 to-red-600/5'
-        : 'bg-transparent'
-    }`}
-  >
-    <div className="flex items-start w-full max-w-3xl gap-4 mx-auto">
-      {message.role === 'assistant' ? (
-        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 ml-4 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-orange-500 to-red-600">
-          AI
+  <div className="mb-4">
+    <div className={`message-card ${message.role === 'assistant' ? 'assistant' : 'user'}`}>
+      <div className="message-meta">
+        <div className={`bubble-avatar ${message.role === 'assistant' ? 'operator' : 'user'}`}>
+          <Hexagon
+            className="w-5 h-5"
+            strokeWidth={2}
+            fill={message.role === 'assistant' ? 'currentColor' : 'none'}
+          />
         </div>
-      ) : (
-        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 text-sm font-medium text-white bg-gray-700 rounded-lg">
-          Y
-        </div>
-      )}
-      <div className="flex-1 min-w-0 mr-4">
+        <span className="text-xs uppercase tracking-[0.2em] text-[var(--text-dim)]">
+          {message.role === 'assistant' ? 'Surrealium' : 'User'}
+        </span>
+      </div>
+      <div className="message-text prose">
         <ReactMarkdown
           className="prose dark:prose-invert max-w-none"
           rehypePlugins={[
